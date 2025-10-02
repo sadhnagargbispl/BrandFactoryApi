@@ -237,6 +237,7 @@ if (!string.IsNullOrEmpty(json))
 
         Response.End();
     }
+   
 
     //private void Process(string reqtype, Dictionary<string, object> dict)
     //{
@@ -457,6 +458,14 @@ if (!string.IsNullOrEmpty(json))
             WriteJson(ErrObj);
         }
     }
+    public class SalesRegistrationRequest
+    {
+        public string reqtype { get; set; }
+        public string userid { get; set; }     // 👈 इसे string रखो
+        public string username { get; set; }
+        public string password { get; set; }
+        public string mobileno { get; set; }
+    }
     public class Item
     {
         public int ProductId { get; set; }
@@ -567,6 +576,11 @@ if (!string.IsNullOrEmpty(json))
             return _output;
 
         }
+        if (checkname(username) != "Ok")
+        {
+            _output = "{\"response\":\"FAILED\",\"msg\":\"Your username already registered on another user.\"}";
+            return _output;
+        }
         if (checkmobilesales(mobileno) != "Ok")
         {
             _output = "{\"response\":\"FAILED\",\"msg\":\"Your Mobile no already registered on another sales person.\"}";
@@ -576,7 +590,7 @@ if (!string.IsNullOrEmpty(json))
         {
             string SqlStr2 = "select groupid from M_usergroupmaster ";
             string userid1 = "";
-            SqlStr2 += " where groupname='" + userid + "'";
+            SqlStr2 += " where groupid='" + userid + "'";
             DataTable Dt2 = new DataTable();
             Dt2 = SqlHelper.ExecuteDataset(constr, CommandType.Text, SqlStr2).Tables[0];
             if (Dt2.Rows.Count > 0)
@@ -822,6 +836,40 @@ if (!string.IsNullOrEmpty(json))
                     if (Convert.ToInt64(Dt.Rows[0]["Cnt"]) >= 1)
                     {
                         errType = "Mobileno";
+                        _Output = "Faild";
+                    }
+                    else
+                    {
+                        _Output = "Ok";
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Handle exception if needed
+        }
+
+        return _Output;
+    }
+    private string checkname(string username)
+    {
+        string sql = "";
+        string _Output = "";
+        string errType = "";
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                sql = "SELECT COUNT(*) AS Cnt FROM M_usermaster WHERE username = '" + username + "'";
+                DataTable Dt = new DataTable();
+                Dt = SqlHelper.ExecuteDataset(constr, CommandType.Text, sql).Tables[0];
+                if (Dt.Rows.Count > 0)
+                {
+                    if (Convert.ToInt64(Dt.Rows[0]["Cnt"]) >= 1)
+                    {
+                        errType = "Username";
                         _Output = "Faild";
                     }
                     else
